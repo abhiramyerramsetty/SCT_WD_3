@@ -1,0 +1,198 @@
+%%html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Quiz Game</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .quiz-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+    .options {
+      margin-bottom: 20px;
+    }
+    .option {
+      margin-bottom: 10px;
+    }
+    button {
+      background: #ffcc00;
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #ffe066;
+    }
+    .result {
+      text-align: center;
+      font-size: 1.3em;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>🧠 Interactive Quiz Game</h1>
+    <div id="quiz"></div>
+    <button id="next-btn">Next</button>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        type: "single",
+        question: "1️⃣ What does HTML stand for?",
+        options: [
+          "Hyper Text Markup Language",
+          "Home Tool Markup Language",
+          "Hyperlinks and Text Markup Language",
+        ],
+        correct: ["Hyper Text Markup Language"],
+      },
+      {
+        type: "multi",
+        question: "2️⃣ Which of the following are programming languages?",
+        options: ["HTML", "CSS", "Python", "JavaScript"],
+        correct: ["Python", "JavaScript"],
+      },
+      {
+        type: "fill",
+        question: "3️⃣ Fill in the blank: CSS stands for ______ Style Sheets.",
+        correct: ["Cascading"],
+      },
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const quizContainer = document.getElementById("quiz");
+    const nextButton = document.getElementById("next-btn");
+    const resultContainer = document.getElementById("result");
+
+    function loadQuestion() {
+      const q = quizData[currentQuestion];
+      quizContainer.innerHTML = `<div class="question">${q.question}</div>`;
+
+      if (q.type === "single") {
+        const optionsHTML = q.options
+          .map(
+            (opt) => `
+          <div class="option">
+            <input type="radio" name="answer" value="${opt}" /> ${opt}
+          </div>`
+          )
+          .join("");
+        quizContainer.innerHTML += `<div class="options">${optionsHTML}</div>`;
+      } else if (q.type === "multi") {
+        const optionsHTML = q.options
+          .map(
+            (opt) => `
+          <div class="option">
+            <input type="checkbox" name="answer" value="${opt}" /> ${opt}
+          </div>`
+          )
+          .join("");
+        quizContainer.innerHTML += `<div class="options">${optionsHTML}</div>`;
+      } else if (q.type === "fill") {
+        quizContainer.innerHTML += `
+          <input type="text" id="fill-answer" placeholder="Type your answer here..." />
+        `;
+      }
+
+      resultContainer.innerHTML = "";
+      nextButton.innerText = currentQuestion === quizData.length - 1 ? "Submit" : "Next";
+    }
+
+    function checkAnswer() {
+      const q = quizData[currentQuestion];
+      let userAnswers = [];
+
+      if (q.type === "single") {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (selected) userAnswers.push(selected.value);
+      } else if (q.type === "multi") {
+        const selected = [...document.querySelectorAll('input[name="answer"]:checked')];
+        userAnswers = selected.map((input) => input.value);
+      } else if (q.type === "fill") {
+        const input = document.getElementById("fill-answer").value.trim();
+        if (input) userAnswers.push(input);
+      }
+
+      if (userAnswers.length === 0) {
+        alert("Please select or enter an answer!");
+        return false;
+      }
+
+      if (arraysEqualIgnoreCase(userAnswers, q.correct)) {
+        score++;
+      }
+
+      currentQuestion++;
+      if (currentQuestion < quizData.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function arraysEqualIgnoreCase(arr1, arr2) {
+      return (
+        arr1.length === arr2.length &&
+        arr1.every((a) =>
+          arr2.some((b) => a.toLowerCase() === b.toLowerCase())
+        )
+      );
+    }
+
+    function showResult() {
+      quizContainer.innerHTML = "";
+      nextButton.style.display = "none";
+      resultContainer.innerHTML = `
+        🎉 Quiz Completed! <br>
+        Your Score: ${score} / ${quizData.length} <br>
+        ${score === quizData.length ? "Excellent job! 🌟" : "Keep practicing! 💪"}
+      `;
+    }
+
+    nextButton.addEventListener("click", checkAnswer);
+
+    loadQuestion();
+  </script>
+</body>
+</html>
